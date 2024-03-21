@@ -7,6 +7,7 @@
 - [x] crawler
 - [] persistence
 - [] queuing
+- [] tests
 
 ### Infra
 
