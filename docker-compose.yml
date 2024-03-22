@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  crawler-app:
+    depends_on:
+      - db
+    build:
+      context: .
+    container_name: rest-server
+    hostname: rest-server
+    networks:
+      - mynet
+    ports:
+      - 80:8080
+    environment:
+      - PGUSER=${PGUSER:-totoro}
+      - PGPASSWORD=${PGPASSWORD:?database password not set}
+      - PGHOST=${PGHOST:-db}
+      - PGPORT=${PGPORT:-5432}
+      - PGDATABASE=${PGDATABASE:-mydb}
+    deploy:
+      restart_policy:
+        condition: on-failure
+  db:
+    image: postgres
+    restart: always
+    # set shared memory limit when using docker-compose
+    shm_size: 128mb
+    # or set shared memory limit when deploy via swarm stack
+    #volumes:
+    #  - type: tmpfs
+    #    target: /dev/shm
+    #    tmpfs:
+    #      size: 134217728 # 128*2^20 bytes = 128Mb
+    networks:
+      - mynet
+    environment:
+      - POSTGRES_PASSWORD=${PGPASSWORD:?database password not set}
+    ports:
+      - 5432:5432
+
+#volumes:
+#  pgdata:
+
+networks:
+  mynet:
+    driver: bridge
