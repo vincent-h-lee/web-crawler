@@ -6,18 +6,16 @@ services:
       - db
     build:
       context: .
-    container_name: rest-server
-    hostname: rest-server
     networks:
       - mynet
     ports:
       - 80:8080
     environment:
-      - PGUSER=${PGUSER:-totoro}
-      - PGPASSWORD=${PGPASSWORD:?database password not set}
-      - PGHOST=${PGHOST:-db}
-      - PGPORT=${PGPORT:-5432}
-      - PGDATABASE=${PGDATABASE:-mydb}
+      - POSTGRES_USER=${PGUSER}
+      - POSTGRES_PASSWORD=${PGPASSWORD:?database password not set}
+      - POSTGRES_HOST=${PGHOST}
+      - POSTGRES_PORT=${PGPORT}
+      - POSTGRES_DB=${PGDATABASE}
     deploy:
       restart_policy:
         condition: on-failure
@@ -35,9 +33,13 @@ services:
     networks:
       - mynet
     environment:
+      - POSTGRES_USER=${PGUSER}
       - POSTGRES_PASSWORD=${PGPASSWORD:?database password not set}
+      - POSTGRES_DB=${PGDATABASE}
     ports:
       - 5432:5432
+    volumes:
+      - ./migrations:/docker-entrypoint-initdb.d
 
 #volumes:
 #  pgdata:
