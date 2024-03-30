@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   crawler-app:
+    image: crawler-app:${TAG:-v0.1}
     depends_on:
       - db
     build:
