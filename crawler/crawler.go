@@ -4,44 +4,46 @@ import (
 	"errors"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
+	"github.com/uptrace/bun"
 )
 
-type link struct {
-	Url string
+type Link struct {
+	bun.BaseModel `bun:"table:crawl_links"`
+	Url           string `json:"url"`
+	Text          string `json:"text"`
+
+	CrawlId int64 `json:"-"`
 }
 
-type heading struct {
-	Text string
-	Tag  string
+type Heading struct {
+	bun.BaseModel `bun:"table:crawl_headings"`
+
+	Text    string `json:"text"`
+	Tag     string `json:"tag"`
+	CrawlId int64  `json:"-"`
 }
 
-type DocumentData struct {
-	// Description
-	// Images?
-	Title    string
-	Headings []heading
-	Links    []link
-}
-
-func Crawl(u string) (*DocumentData, error) {
+func Crawl(u string) (CrawlEvent, error) {
+	timestamp := time.Now().UTC()
 	page, err := rod.New().MustConnect().Page(proto.TargetCreateTarget{URL: u})
 	if err != nil {
-		return nil, errors.Join(errors.New("could not connect to page"), err)
+		return CrawlEvent{}, errors.Join(errors.New("could not connect to page"), err)
 	}
 	page.MustWaitStable()
 
 	title := page.MustElement("h1").MustText()
 
-	var headings []heading
+	var headings []Heading
 	els := page.MustElements("h1,h2,h3,h4,h5,h6")
 	for _, el := range els {
-		headings = append(headings, heading{Text: strings.TrimSpace(el.MustText()), Tag: el.MustProperty("tagName").String()})
+		headings = append(headings, Heading{Text: strings.TrimSpace(el.MustText()), Tag: el.MustProperty("tagName").String()})
 	}
 
-	var links []link
+	var links []Link
 	urlsSet := map[string]bool{}
 	els = page.MustElements("a")
 	for _, el := range els {
@@ -50,10 +52,10 @@ func Crawl(u string) (*DocumentData, error) {
 
 		if err == nil && !urlsSet[u] {
 			urlsSet[href] = true
-			links = append(links, link{Url: el.MustProperty("href").String()})
+			links = append(links, Link{Url: el.MustProperty("href").String()})
 		}
 	}
 
-	doc := &DocumentData{Title: title, Headings: headings, Links: links}
-	return doc, nil
+	ev := NewCrawlEvent(u, title, headings, links, 0, timestamp)
+	return ev, nil
 }

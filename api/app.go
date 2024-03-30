@@ -3,6 +3,8 @@ package api
 import (
 	"log"
 	"net/http"
+
+	"github.com/uptrace/bun"
 )
 
 type app struct {
@@ -14,13 +16,8 @@ func (a *app) Start() {
 	log.Fatal(a.srv.ListenAndServe())
 }
 
-func NewApp(addr string) *app {
-	/* dbService, err := service.NewDatabaseService("./enforcements.db")
-	if err != nil {
-		log.Fatal(err)
-	} */
-
-	routes := NewRouter()
+func NewApp(addr string, db *bun.DB) *app {
+	routes := NewRouter(db)
 
 	srv := &http.Server{
 		Addr:    addr,

@@ -1,25 +1,29 @@
 package crawler
 
-import "time"
+import (
+	"context"
 
-type crawlEvent struct {
-	Url  string
-	Data DocumentData
-	Date time.Time
+	"github.com/uptrace/bun"
+)
+
+type CrawlerRepository struct {
+	db *bun.DB
 }
 
-func NewCrawlEvent(u string, data DocumentData, now time.Time) crawlEvent {
-	return crawlEvent{Url: u, Data: data, Date: now}
+func NewCrawlerRepository(db *bun.DB) *CrawlerRepository {
+	return &CrawlerRepository{db}
 }
 
-type CrawlerRepository struct{}
-
-func (r *CrawlerRepository) Store(ev crawlEvent) (*crawlEvent, error) {
+func (r *CrawlerRepository) Store(ev CrawlEvent) (CrawlEvent, error) {
 	// TODO
-	return nil, nil
+	return CrawlEvent{}, nil
 }
 
-func (r *CrawlerRepository) Get(id string) (*crawlEvent, error) {
-	// TODO
-	return nil, nil
+func (r *CrawlerRepository) Get(ctx context.Context, id int) (CrawlEvent, error) {
+	crawlEvent := new(CrawlEvent)
+	err := r.db.NewSelect().Model(crawlEvent).Relation("Headings").Relation("Links").Where("id = ?", 1).Scan(ctx)
+	if err != nil {
+		return *crawlEvent, err
+	}
+	return *crawlEvent, nil
 }
