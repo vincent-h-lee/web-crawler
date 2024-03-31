@@ -14,7 +14,7 @@ RUN go mod download
 #COPY *.go ./
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -C ./queue -o /crawler-worker
+RUN CGO_ENABLED=0 GOOS=linux go build -C ./cmd/worker -o /crawler-worker
 
 # Run the tests in the container
 # FROM build-stage AS run-test-stage
@@ -25,6 +25,5 @@ RUN CGO_ENABLED=0 GOOS=linux go build -C ./queue -o /crawler-worker
 # But we can document in the Dockerfile what ports
 # the application is going to listen on by default.
 # https://docs.docker.com/reference/dockerfile/#expose
-EXPOSE 8080
 
 CMD ["/crawler-worker"]
