@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"vincent-h-lee/web-crawler/util"
+	"vincent-h-lee/web-crawler/internal/util"
 )
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {

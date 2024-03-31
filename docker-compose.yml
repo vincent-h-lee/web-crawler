@@ -1,12 +1,17 @@
 version: "3.8"
 
 services:
-  crawler-app:
-    image: crawler-app:${TAG:-v0.1}
+  api:
+    container_name: crawler-api
+    image: crawler-api:${TAG:-v0.1}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      mq:
+        condition: service_healthy
     build:
       context: .
+      dockerfile: ./Dockerfile.api
     networks:
       - mynet
     ports:
@@ -17,10 +22,35 @@ services:
       - POSTGRES_HOST=${PGHOST}
       - POSTGRES_PORT=${PGPORT}
       - POSTGRES_DB=${PGDATABASE}
+      - MQ_CONNECTION=amqp://${MQUSER}:${MQPASSWORD}@crawler-queue:5672/
+    deploy:
+      restart_policy:
+        condition: on-failure
+  worker:
+    container_name: crawler-worker
+    image: crawler-worker:${TAG:-v0.1}
+    depends_on:
+      db:
+        condition: service_healthy
+      mq:
+        condition: service_healthy
+    build:
+      context: .
+      dockerfile: ./Dockerfile.queue
+    networks:
+      - mynet
+    environment:
+      - POSTGRES_USER=${PGUSER}
+      - POSTGRES_PASSWORD=${PGPASSWORD:?database password not set}
+      - POSTGRES_HOST=${PGHOST}
+      - POSTGRES_PORT=${PGPORT}
+      - POSTGRES_DB=${PGDATABASE}
+      - MQ_CONNECTION=amqp://${MQUSER}:${MQPASSWORD}@crawler-queue:5672/
     deploy:
       restart_policy:
         condition: on-failure
   db:
+    container_name: crawler-db
     image: postgres
     restart: always
     # set shared memory limit when using docker-compose
@@ -41,6 +71,26 @@ services:
       - 5432:5432
     volumes:
       - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${PGUSER} -d ${PGDATABASE}'"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+  mq:
+    container_name: crawler-mq
+    image: "rabbitmq:3-management"
+    hostname: crawler-queue
+    ports:
+      - 15672:15672
+    networks:
+      - mynet
+    volumes:
+      - ./enabled_plugins:/etc/rabbitmq/enabled_plugins
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 15s
+      retries: 10
 
 #volumes:
 #  pgdata:

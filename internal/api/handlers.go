@@ -1,16 +1,19 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
+	"net/url"
 	"strconv"
-	"time"
-	"vincent-h-lee/web-crawler/crawler"
+	"vincent-h-lee/web-crawler/internal/crawler"
+	"vincent-h-lee/web-crawler/internal/queue"
 
 	"github.com/go-chi/chi/v5"
 )
 
 type Handlers struct {
-	repo *crawler.CrawlerRepository
+	publisher *queue.Publisher
+	repo      *crawler.CrawlerRepository
 }
 
 func (h *Handlers) GetCrawlEventRoute(w http.ResponseWriter, r *http.Request) {
@@ -30,15 +33,28 @@ func (h *Handlers) GetCrawlEventRoute(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, ev)
 }
 
-func (h *Handlers) PostCrawlEventRoute(w http.ResponseWriter, r *http.Request) {
-	ev, err := h.repo.Store(r.Context(), crawler.NewCrawlEvent("https://millandcommonsss.com", "", []crawler.Heading{{Text: "some title", Tag: "h1"}}, []crawler.Link{{Text: "Link", Url: "https://google.com"}}, 400, time.Now()))
-	/* consumer := queue.NewConsumer(repo)
-	ev, err := consumer.Consume("https://millandcommons.com") */
+type PostCrawlEventBody struct {
+	Url string `json:"url"`
+}
 
+func (h *Handlers) PostCrawlEventRoute(w http.ResponseWriter, r *http.Request) {
+	var body PostCrawlEventBody
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		respondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if _, err := url.ParseRequestURI(body.Url); err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid URL")
+		return
+	}
+
+	err := h.publisher.Publish(r.Context(), body.Url)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, ev)
+	respondWithJSON(w, http.StatusNoContent, nil)
 }
