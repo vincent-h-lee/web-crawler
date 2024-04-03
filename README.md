@@ -29,11 +29,20 @@ A web crawling system
 | --- | --- |
 | Description | Command |
 | --- | --- |
-| Run detached | docker-compose up -d |
-| Build + run | docker-compose up --build |
-| Down | docker-compose down |
-| Down and also remove volumes (start fresh on dbs) | docker-compose down --volumes |
+| Run detached | `docker-compose up -d` |
+| Build + run | `docker-compose up --build` |
+| Down | `docker-compose down` |
+| Down and also remove volumes (start fresh on dbs) | `docker-compose down --volumes` |
+
+## Usage
+
+| --- | --- |
+| Description | Command |
+| --- | --- |
+| Add a URL for crawling | `curl -d '{"url":"https://leevincenth.com"}' -H "Content-Type: application/json" -X POST http://localhost:80/crawls` |
 | Postgres | docker exec -it crawler-db psql -U <PGUSER> -d <PGDATABASE> |
+| Logs | docker logs <crawler-worker|crawler-api|etc> |
+| View Queue | Go to http://localhost:15672 |
 
 ## Todo
 
