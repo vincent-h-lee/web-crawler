@@ -2,17 +2,18 @@ package queue
 
 import (
 	"context"
+	"log"
 	"vincent-h-lee/web-crawler/internal/crawler"
-
-	"github.com/go-rod/rod"
 )
 
-func NewConsumer(repo crawler.CrawlerRepository, publisher Publisher, pool *rod.PagePool, create func() *rod.Page) func(ctx context.Context, u string) error {
+func NewConsumer(repo crawler.CrawlerRepository, publisher Publisher, pool crawler.Pool) func(ctx context.Context, u string) error {
 	return func(ctx context.Context, u string) error {
-		page := pool.Get(create)
+		log.Printf("Consuming url: %s", u)
+		page := pool.Get()
 		defer pool.Put(page)
 
 		hasRecentlyCrawled, err := repo.HasRecentlyCrawled(ctx, u)
+		log.Printf("Has recently crawled url: %t", hasRecentlyCrawled)
 		if err != nil {
 			return err
 		}

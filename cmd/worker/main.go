@@ -80,6 +80,7 @@ func main() {
 		// We use MustIncognito to isolate pages with each other
 		return browser.MustIncognito().MustPage()
 	}
+	rodPool := crawler.NewRodPool(&pool, create)
 
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     os.Getenv("CACHE_URL"),
@@ -91,7 +92,7 @@ func main() {
 	repo := crawler.NewDbCachedCrawlerRepository(db, cache)
 	publisher := queue.NewRabbitMqPublisher(&q, ch)
 
-	job := queue.NewConsumer(repo, publisher, &pool, create)
+	job := queue.NewConsumer(repo, publisher, rodPool)
 
 	var forever chan struct{}
 
