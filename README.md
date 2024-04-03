@@ -26,10 +26,6 @@ A web crawling system
 
 ### Commands
 
-```
-
-```
-
 | --- | --- |
 | Description | Command |
 | --- | --- |
