@@ -67,7 +67,7 @@ func main() {
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
-	cache := crawler.NewCache(redisClient)
+	cache := crawler.NewRedisCache(redisClient)
 
 	app := api.NewApp(":8080", db, publisher, cache)
 	app.Start()

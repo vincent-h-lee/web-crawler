@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"context"
+	"database/sql"
 	"log"
 
 	"github.com/uptrace/bun"
@@ -15,10 +16,10 @@ type CrawlerRepository interface {
 
 type DbCachedCrawlerRepository struct {
 	db    *bun.DB
-	cache *Cache
+	cache Cache
 }
 
-func NewDbCachedCrawlerRepository(db *bun.DB, cache *Cache) CrawlerRepository {
+func NewDbCachedCrawlerRepository(db *bun.DB, cache Cache) CrawlerRepository {
 	return &DbCachedCrawlerRepository{db, cache}
 }
 
@@ -64,6 +65,8 @@ func (r *DbCachedCrawlerRepository) Store(ctx context.Context, ev CrawlEvent) (C
 
 	log.Printf("Stored CrawlEvent: %d", ev.Id)
 
+	r.cache.SetUrl(ctx, ev.Url)
+
 	return ev, nil
 }
 
@@ -84,22 +87,33 @@ func (r *DbCachedCrawlerRepository) Get(ctx context.Context, id int) (CrawlEvent
 }
 
 func (r *DbCachedCrawlerRepository) HasRecentlyCrawled(ctx context.Context, u string) (bool, error) {
-	hit := r.cache.HasRecentlyCrawled(ctx, u)
-
-	if hit {
-		return hit, nil
-	}
-
-	crawlEvent := new(CrawlEvent)
-	err := r.db.NewSelect().
-		Model(crawlEvent).
-		Where("url = ?", u).
-		Where("timetsamp > now() - interval '1 day'").
-		Scan(ctx)
+	hit, err := r.cache.HasRecentlyCrawled(ctx, u)
 
 	if err != nil {
 		return false, err
 	}
+
+	if hit {
+		return true, nil
+	}
+
+	crawlEvent := new(CrawlEvent)
+	err = r.db.NewSelect().
+		Model(crawlEvent).
+		Where("url = ?", u).
+		Where("timestamp > now() - interval '1 day'").
+		Scan(ctx)
+
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+
+	if err != nil {
+		return false, err
+	}
+
+	// result found so store in cache
+	r.cache.SetUrl(ctx, u)
 
 	return true, nil
 }
