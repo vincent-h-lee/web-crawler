@@ -6,6 +6,24 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type Link struct {
+	bun.BaseModel `bun:"table:crawl_links"`
+
+	Id      int64  `bun:",pk,autoincrement" json:"-"`
+	Url     string `json:"url"`
+	Text    string `json:"text"`
+	CrawlId int64  `json:"-"`
+}
+
+type Heading struct {
+	bun.BaseModel `bun:"table:crawl_headings"`
+
+	Id      int64  `bun:",pk,autoincrement" json:"-"`
+	Text    string `json:"text"`
+	Tag     string `json:"tag"`
+	CrawlId int64  `bun:"crawl_id" json:"-"`
+}
+
 type CrawlEvent struct {
 	bun.BaseModel `bun:"table:crawls"`
 

@@ -17,7 +17,7 @@
 
 - [x] crawler
 - [x] persistence
-- [] queuing
+- [x] queuing
 - [] tests
 
 ### Build

@@ -2,38 +2,28 @@ package crawler
 
 import (
 	"errors"
+	"log"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
-	"github.com/uptrace/bun"
 )
 
-type Link struct {
-	bun.BaseModel `bun:"table:crawl_links"`
-	Url           string `json:"url"`
-	Text          string `json:"text"`
-
-	CrawlId int64 `json:"-"`
-}
-
-type Heading struct {
-	bun.BaseModel `bun:"table:crawl_headings"`
-
-	Text    string `json:"text"`
-	Tag     string `json:"tag"`
-	CrawlId int64  `json:"-"`
-}
-
-func Crawl(u string) (CrawlEvent, error) {
+func Crawl(u string, page rod.Page) (CrawlEvent, error) {
 	timestamp := time.Now().UTC()
-	page, err := rod.New().MustConnect().Page(proto.TargetCreateTarget{URL: u})
+	log.Printf("Crawling: %s at %s", u, timestamp)
+
+	e := proto.NetworkResponseReceived{}
+	wait := page.WaitEvent(&e)
+
+	err := page.Navigate(u)
 	if err != nil {
 		return CrawlEvent{}, errors.Join(errors.New("could not connect to page"), err)
 	}
 	page.MustWaitStable()
+	wait()
 
 	title := page.MustElement("h1").MustText()
 
@@ -50,12 +40,13 @@ func Crawl(u string) (CrawlEvent, error) {
 		href := el.MustProperty("href").String()
 		_, err := url.ParseRequestURI(href)
 
-		if err == nil && !urlsSet[u] {
+		if err == nil && !urlsSet[href] {
 			urlsSet[href] = true
 			links = append(links, Link{Url: el.MustProperty("href").String()})
 		}
 	}
 
-	ev := NewCrawlEvent(u, title, headings, links, 0, timestamp)
+	ev := NewCrawlEvent(u, title, headings, links, e.Response.Status, timestamp)
+	log.Printf("Finished crawling %s", u)
 	return ev, nil
 }

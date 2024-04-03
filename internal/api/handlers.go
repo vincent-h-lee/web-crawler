@@ -12,8 +12,8 @@ import (
 )
 
 type Handlers struct {
-	publisher *queue.Publisher
-	repo      *crawler.CrawlerRepository
+	publisher queue.Publisher
+	repo      crawler.CrawlerRepository
 }
 
 func (h *Handlers) GetCrawlEventRoute(w http.ResponseWriter, r *http.Request) {

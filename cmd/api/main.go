@@ -6,10 +6,13 @@ import (
 	"log"
 	"os"
 	"vincent-h-lee/web-crawler/internal/api"
+	"vincent-h-lee/web-crawler/internal/crawler"
 	"vincent-h-lee/web-crawler/internal/queue"
 	"vincent-h-lee/web-crawler/internal/util"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/redis/go-redis/v9"
+
 	"github.com/uptrace/bun"
 
 	"github.com/uptrace/bun/dialect/pgdialect"
@@ -54,11 +57,18 @@ func main() {
 		nil,    // arguments
 	)
 	util.FailOnError(err, "Failed to declare a queue")
-	publisher := queue.NewPublisher(&q, ch)
+	publisher := queue.NewRabbitMqPublisher(&q, ch)
 
 	sqldb := sql.OpenDB(getPgDriverConnector())
 	db := bun.NewDB(sqldb, pgdialect.New())
 
-	app := api.NewApp(":8080", db, publisher)
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("CACHE_URL"),
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+	cache := crawler.NewCache(redisClient)
+
+	app := api.NewApp(":8080", db, publisher, cache)
 	app.Start()
 }

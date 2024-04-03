@@ -19,8 +19,9 @@ func (a *app) Start() {
 	log.Fatal(a.srv.ListenAndServe())
 }
 
-func NewApp(addr string, db *bun.DB, publisher *queue.Publisher) *app {
-	handlers := Handlers{repo: crawler.NewCrawlerRepository(db), publisher: publisher}
+func NewApp(addr string, db *bun.DB, publisher queue.Publisher, cache *crawler.Cache) *app {
+	repo := crawler.NewDbCachedCrawlerRepository(db, cache)
+	handlers := Handlers{repo: repo, publisher: publisher}
 
 	router := chi.NewRouter()
 	router.Route("/crawls", func(r chi.Router) {

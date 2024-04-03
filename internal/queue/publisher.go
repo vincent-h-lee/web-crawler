@@ -7,16 +7,20 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type Publisher struct {
+type Publisher interface {
+	Publish(ctx context.Context, u string) error
+}
+
+func NewRabbitMqPublisher(queue *amqp.Queue, channel *amqp.Channel) Publisher {
+	return &RabbitMqPublisher{queue, channel}
+}
+
+type RabbitMqPublisher struct {
 	queue   *amqp.Queue
 	channel *amqp.Channel
 }
 
-func NewPublisher(queue *amqp.Queue, channel *amqp.Channel) *Publisher {
-	return &Publisher{queue, channel}
-}
-
-func (p *Publisher) Publish(ctx context.Context, u string) error {
+func (p *RabbitMqPublisher) Publish(ctx context.Context, u string) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 

@@ -2,29 +2,42 @@ package queue
 
 import (
 	"context"
-	"log"
 	"vincent-h-lee/web-crawler/internal/crawler"
 
-	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/go-rod/rod"
 )
 
-type consumer struct {
-	repo    *crawler.CrawlerRepository
-	queue   *amqp.Queue
-	channel *amqp.Channel
-}
+func NewConsumer(repo crawler.CrawlerRepository, publisher Publisher, pool *rod.PagePool, create func() *rod.Page) func(ctx context.Context, u string) error {
+	return func(ctx context.Context, u string) error {
+		page := pool.Get(create)
+		defer pool.Put(page)
 
-func NewConsumer(repo *crawler.CrawlerRepository) *consumer {
-	return &consumer{repo: repo}
-}
+		hasRecentlyCrawled, err := repo.HasRecentlyCrawled(ctx, u)
+		if err != nil {
+			return err
+		}
 
-func (c *consumer) Consume(u string) (crawler.CrawlEvent, error) {
-	ctx := context.Background()
+		if hasRecentlyCrawled {
+			return nil
+		}
 
-	ev, err := crawler.Crawl(u)
-	if err != nil {
-		log.Fatal(err)
+		ev, err := crawler.Crawl(u, *page)
+		if err != nil {
+			return err
+		}
+
+		ev, err = repo.Store(ctx, ev)
+		if err != nil {
+			return err
+		}
+
+		for _, link := range ev.Links {
+			err = publisher.Publish(ctx, link.Url)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
 	}
-
-	return c.repo.Store(ctx, ev)
 }
