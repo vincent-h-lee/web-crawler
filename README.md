@@ -1,19 +1,47 @@
 # Web crawler
 
-## Commands
+## What
+
+A web crawling system
+
+- Simple API to POST URLs for crawling and GET the results of a crawl
+- Read URLs for crawling from a Queue (RabbitMQ)
+- Caching layer to reduce checks for recently crawled URLs (Redis)
+- Browser instance to load URLs ([go-rod](https://github.com/go-rod/rod))
+- Database to persist crawl events (Postgres)
+- Docker Compose for development
+
+## Why
+
+1. Learn Go and Kubernetes
+1. General exploration
+
+## Getting started
+
+### Requirements
+
+- docker v25
+- docker-compose v2.24
+- go 1.22
+
+### Commands
+
+```
+
+```
 
 | --- | --- |
 | Description | Command |
 | --- | --- |
-| Compose Up | docker-compose up |
-| Compose Up with build | docker-compose up --build |
-| Compose Down | docker-compose down |
-| Compose Down with volumes | docker-compose down --volumes |
-| Psql | docker exec -it crawler-db-1 psql -U <PGUSER> -d <PGDATABASE> |
+| Run detached | docker-compose up -d |
+| Build + run | docker-compose up --build |
+| Down | docker-compose down |
+| Down and also remove volumes (start fresh on dbs) | docker-compose down --volumes |
+| Postgres | docker exec -it crawler-db psql -U <PGUSER> -d <PGDATABASE> |
 
 ## Todo
 
-### Core
+### Core features
 
 - [x] crawler
 - [x] persistence
@@ -25,10 +53,13 @@
 - [x] docker
 - [x] docker compose
 
-### Infra
+### Deploy
 
+- [] CI/CD pipelines
 - [] kubernetes
 
-### Vitals
+### Observability
 
-- [] ELK/prometheus+grafana
+- [] metrics
+- [] alerting
+- [] ELK
