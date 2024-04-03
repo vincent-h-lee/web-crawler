@@ -99,7 +99,7 @@ func main() {
 	go func() {
 		for d := range msgs {
 			ctx := context.Background()
-			log.Printf("Received a message: %s", d.Body)
+			log.Printf("Processing message %s", d.Body)
 			err := job(ctx, string(d.Body))
 			if err != nil {
 				log.Printf("Processing message failed with error: %s", err)
