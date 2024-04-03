@@ -59,7 +59,7 @@ func main() {
 	msgs, err := ch.Consume(
 		q.Name, // queue
 		"",     // consumer
-		true,   // auto-ack
+		true,   // auto-ack TODO don't auto-ack
 		false,  // exclusive
 		false,  // no-local
 		false,  // no-wait
