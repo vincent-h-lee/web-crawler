@@ -94,6 +94,7 @@ func (r *DbCachedCrawlerRepository) HasRecentlyCrawled(ctx context.Context, u st
 	err := r.db.NewSelect().
 		Model(crawlEvent).
 		Where("url = ?", u).
+		Where("timetsamp > now() - interval '1 day'").
 		Scan(ctx)
 
 	if err != nil {
