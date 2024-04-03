@@ -22,7 +22,7 @@ func (c *Cache) HasRecentlyCrawled(ctx context.Context, u string) bool {
 }
 
 func (c *Cache) SetUrl(ctx context.Context, u string) error {
-	duration, err := time.ParseDuration("7d")
+	duration, err := time.ParseDuration("1d")
 	if err != nil {
 		return err
 	}
