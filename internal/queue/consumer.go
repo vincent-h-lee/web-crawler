@@ -19,6 +19,7 @@ func NewConsumer(repo crawler.CrawlerRepository, publisher Publisher, pool crawl
 		}
 
 		if hasRecentlyCrawled {
+			// early exit don't need to crawl
 			return nil
 		}
 
@@ -33,6 +34,7 @@ func NewConsumer(repo crawler.CrawlerRepository, publisher Publisher, pool crawl
 		}
 
 		for _, link := range ev.Links {
+			log.Printf("Publishing url: %s", link.Url)
 			err = publisher.Publish(ctx, link.Url)
 			if err != nil {
 				return err
