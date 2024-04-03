@@ -2,7 +2,14 @@ module vincent-h-lee/web-crawler
 
 go 1.22.1
 
-require github.com/go-rod/rod v0.114.8
+require (
+	github.com/go-rod/rod v0.114.8
+	github.com/rabbitmq/amqp091-go v1.9.0
+	github.com/redis/go-redis/v9 v9.5.1
+	github.com/uptrace/bun v1.1.17
+	github.com/uptrace/bun/dialect/pgdialect v1.1.17
+	github.com/uptrace/bun/driver/pgdriver v1.1.17
+)
 
 require (
 	github.com/aarondl/json v0.0.0-20221020222930-8b0db17ef1bf // indirect
@@ -15,13 +22,8 @@ require (
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494 // indirect
-	github.com/rabbitmq/amqp091-go v1.9.0 // indirect
-	github.com/redis/go-redis/v9 v9.5.1 // indirect
 	github.com/stephenafamo/scan v0.4.2 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
-	github.com/uptrace/bun v1.1.17 // indirect
-	github.com/uptrace/bun/dialect/pgdialect v1.1.17 // indirect
-	github.com/uptrace/bun/driver/pgdriver v1.1.17 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	golang.org/x/crypto v0.18.0 // indirect
