@@ -30,6 +30,8 @@ services:
     container_name: crawler-worker
     image: crawler-worker:${TAG:-v0.1}
     depends_on:
+      browser:
+        condition: service_started
       db:
         condition: service_healthy
       mq:
@@ -40,6 +42,8 @@ services:
     networks:
       - mynet
     environment:
+      - CACHE_URL=http://cache:6379
+      - BROWSER_URL=ws://browser:7317
       - POSTGRES_USER=${PGUSER}
       - POSTGRES_PASSWORD=${PGPASSWORD:?database password not set}
       - POSTGRES_HOST=${PGHOST}
@@ -53,6 +57,7 @@ services:
     container_name: crawler-db
     image: postgres
     restart: always
+    command: ["postgres", "-c", "log_statement=all"]
     # set shared memory limit when using docker-compose
     shm_size: 128mb
     # or set shared memory limit when deploy via swarm stack
@@ -91,6 +96,18 @@ services:
       interval: 5s
       timeout: 15s
       retries: 10
+  browser:
+    container_name: browser
+    image: ghcr.io/go-rod/rod
+    networks:
+      - mynet
+    ports:
+      - 7317:7317
+  cache:
+    container_name: crawler-cache
+    image: redis:7.2-alpine
+    networks:
+      - mynet
 
 #volumes:
 #  pgdata:
