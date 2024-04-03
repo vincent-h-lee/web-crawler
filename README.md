@@ -4,12 +4,13 @@
 
 A web crawling system
 
-- Simple API to POST URLs for crawling and GET the results of a crawl
-- Read URLs for crawling from a Queue (RabbitMQ)
+- Simple API to POST URLs for crawling and GET the results of a crawl (Go)
+- URLs for crawling are queued up (RabbitMQ)
+- Queue consumer written in Go to scrape web pages and queue up scraped URLs (Go)
+- Browser instance to render web pages ([go-rod](https://github.com/go-rod/rod))
 - Caching layer to reduce checks for recently crawled URLs (Redis)
-- Browser instance to load URLs ([go-rod](https://github.com/go-rod/rod))
 - Database to persist crawl events (Postgres)
-- Docker Compose for development
+- Development environment (Docker/Docker Compose)
 
 ## Why
 
