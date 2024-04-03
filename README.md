@@ -50,7 +50,7 @@ A web crawling system
 - [x] crawler
 - [x] persistence
 - [x] queuing
-- [] tests
+- [ ] tests
 
 ### Build
 
@@ -59,11 +59,11 @@ A web crawling system
 
 ### Deploy
 
-- [] CI/CD pipelines
-- [] kubernetes
+- [ ] CI/CD pipelines
+- [ ] kubernetes
 
 ### Observability
 
-- [] metrics
-- [] alerting
-- [] ELK
+- [ ] metrics
+- [ ] alerting
+- [ ] ELK
